@@ -42,9 +42,10 @@ def is_objective_state(state):
 objective_function = is_objective_state
 
 class BucketsState:
-    def __init__(self, capacities, previous=None):
+    def __init__(self, capacities, previous=None, next=None):
         self.bucket_a, self.bucket_b = capacities
         self.previous = previous
+        self.next = next
 
     def __eq__(self, other):
         return self.bucket_a == other.bucket_a and self.bucket_b == other.bucket_b
@@ -140,8 +141,9 @@ def bfs(start):
             if not next:
                 continue
             next.previous = current
-            visited.append((current.bucket_a, current.bucket_b))
             queue.append(next)
+        visited.append((current.bucket_a, current.bucket_b))
+
 
     path = []
     while solution:
@@ -150,4 +152,36 @@ def bfs(start):
 
     return list(reversed(path))
 
-print("Solution", bfs(BucketsState((0, 0))))
+def dfs(state, max_depth):
+    dfs_rec(state, 0, max_depth)
+    return get_solution(state)
+
+def dfs_rec(state, current_depth, max_depth):
+
+    if current_depth == max_depth:
+        return False
+
+    if objective_function(state):
+        return True
+
+    for op in operators:
+        next = op(state)
+        if not next:
+            continue
+        state.next = next
+        if dfs_rec(next, current_depth + 1, max_depth):
+            return True
+
+    return False
+
+def get_solution(state):
+    path = []
+    while state:
+        path.append(state)
+        state = state.next
+    return path
+
+
+
+print("BFS Solution", bfs(BucketsState((0, 0))))
+print("DFS Solution", dfs(BucketsState((0,0)), 7))
