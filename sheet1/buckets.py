@@ -1,39 +1,8 @@
 #!/usr/bin/env python3
 
 """
-
-State representation:
 States are represented by (A, B) where A in [0..4], B in [0..3].
-
-Starting state:
-(0, 0)
-
-Operators:
-
-
-
-
-
-PourBAFull -> pours B into A until A is full.
-Preconditions -> B > 0 and A < 4 and B >= 4 - A
-Effects -> B = B - (4 - A); A = 4
-Cost = 1
-
-PourABEmpty -> pours A into B until A is empty.
-Preconditions -> A > 0 and B < 3 and A < 3 - B
-Effects -> A = 0; B = B + A
-Cost -> 1
-
-PourBAEmpty -> pours B into A until B is empty.
-Preconditions -> B > 0 and A < 4 and B < 4 - A
-Effects -> B = 0; A = A + B
-Cost -> 1
-
-Objective Test:
-State is in the form (n, _).
-
 """
-
 max_a, max_b = 4, 3
 
 def is_objective_state(state):
@@ -108,16 +77,33 @@ def pourABFull(state):
         return
     return BucketsState((state.bucket_a - (max_b - state.bucket_b), max_b))
 
+"""
+PourBAFull -> pours B into A until A is full.
+Preconditions -> B > 0 and A < 4 and B >= 4 - A
+Effects -> B = B - (4 - A); A = 4
+Cost = 1
+"""
 def pourBAFull(state):
     if state.bucket_a >= max_a or state.bucket_b < max_a - state.bucket_a:
         return
     return BucketsState((max_a, state.bucket_b - (max_a - state.bucket_a)))
 
+"""
+PourABEmpty -> pours A into B until A is empty.
+Preconditions -> A > 0 and B < 3 and A < 3 - B
+Effects -> A = 0; B = B + A
+Cost -> 1
+"""
 def pourABEmpty(state):
     if state.bucket_b >= max_b or state.bucket_a >= max_b - state.bucket_b:
         return
     return BucketsState((0, state.bucket_a + state.bucket_b))
-
+"""
+PourBAEmpty -> pours B into A until B is empty.
+Preconditions -> B > 0 and A < 4 and B < 4 - A
+Effects -> B = 0; A = A + B
+Cost -> 1
+"""
 def pourBAEmpty(state):
     if state.bucket_a >= max_a or state.bucket_b >= max_a - state.bucket_a:
         return
@@ -153,8 +139,8 @@ def bfs(start):
     return list(reversed(path))
 
 def dfs(state, max_depth):
-    dfs_rec(state, 0, max_depth)
-    return get_solution(state)
+    if dfs_rec(state, 0, max_depth):
+        return get_solution(state)
 
 def dfs_rec(state, current_depth, max_depth):
 
@@ -174,6 +160,15 @@ def dfs_rec(state, current_depth, max_depth):
 
     return False
 
+def ids(state):
+    depth = 0
+    while True:
+        if not dfs(state, depth):
+            depth += 1
+        else:
+            return get_solution(state)
+
+
 def get_solution(state):
     path = []
     while state:
@@ -181,7 +176,6 @@ def get_solution(state):
         state = state.next
     return path
 
-
-
 print("BFS Solution", bfs(BucketsState((0, 0))))
 print("DFS Solution", dfs(BucketsState((0,0)), 7))
+print("IDS Solution", ids(BucketsState((0,0))))
